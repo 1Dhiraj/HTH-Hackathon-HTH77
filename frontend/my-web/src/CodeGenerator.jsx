@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InteractivePreview from "./InteractivePreview";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Eye } from "lucide-react";
 
 const CodeGenerator = () => {
   const location = useLocation();
@@ -23,6 +23,8 @@ const CodeGenerator = () => {
   const [error, setError] = useState("");
   const [serverStatus, setServerStatus] = useState("checking");
   const [uploadedImages, setUploadedImages] = useState({});
+  const [isLivePreview, setIsLivePreview] = useState(false); // State for live preview toggle
+  const previewRef = useRef(null); // Ref for the preview container
 
   useEffect(() => {
     checkServerStatus();
@@ -62,23 +64,18 @@ const CodeGenerator = () => {
       setError("Please provide a description or upload an image");
       return;
     }
-
     setIsLoading(true);
     setError("");
-
     try {
       const response = await fetch("http://localhost:8000/generate-code", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: promptText,
           type: "web",
           framework: "vanilla",
         }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -86,13 +83,9 @@ const CodeGenerator = () => {
             `Server returned ${response.status}: ${response.statusText}`
         );
       }
-
       const data = await response.json();
-      if (data.code) {
-        setGeneratedCode(data.code);
-      } else {
-        throw new Error("Invalid response format from server");
-      }
+      if (data.code) setGeneratedCode(data.code);
+      else throw new Error("Invalid response format from server");
     } catch (error) {
       console.error("Error generating code:", error);
       setError(`Failed to generate code: ${error.message}`);
@@ -104,29 +97,23 @@ const CodeGenerator = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file");
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       setError("Image size should be less than 5MB");
       return;
     }
-
     setIsLoading(true);
     setError("");
-
     const formData = new FormData();
     formData.append("image", file);
-
     try {
       const response = await fetch("http://localhost:8000/analyze-image", {
         method: "POST",
         body: formData,
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -134,11 +121,8 @@ const CodeGenerator = () => {
             `Server returned ${response.status}: ${response.statusText}`
         );
       }
-
       const data = await response.json();
       const { description, code } = data;
-
-      // Check if the response contains a login form; if not, override with a default login form
       if (
         !code.html.includes("<form") ||
         !code.html.includes("input") ||
@@ -210,7 +194,6 @@ button:hover {
     e.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
     if (!username || !password) {
         alert('Please fill in both fields');
         return;
@@ -292,7 +275,6 @@ button:hover {
         e.preventDefault();
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        
         if (!username || !password) {
             alert('Please fill in both fields');
             return;
@@ -306,8 +288,6 @@ button:hover {
       } else {
         setGeneratedCode(code);
       }
-
-      // Store the image as base64 for preview (optional)
       const reader = new FileReader();
       reader.onload = (event) => {
         const base64String = event.target.result;
@@ -337,10 +317,8 @@ button:hover {
       setError("Please provide modification instructions");
       return;
     }
-
     setIsModifying(true);
     setError("");
-
     try {
       const response = await fetch("http://localhost:8000/modify-code", {
         method: "POST",
@@ -357,7 +335,6 @@ button:hover {
           modificationType: "update",
         }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -365,7 +342,6 @@ button:hover {
             `Server returned ${response.status}: ${response.statusText}`
         );
       }
-
       const data = await response.json();
       if (data.code) {
         setGeneratedCode(data.code);
@@ -390,7 +366,6 @@ button:hover {
         `"${base64String}"`
       );
     });
-
     setGeneratedCode({
       ...previewContent,
       html: updatedHtml,
@@ -416,7 +391,6 @@ button:hover {
       );
       return;
     }
-
     const newProject = {
       id: Date.now(),
       name: projectName,
@@ -424,7 +398,6 @@ button:hover {
       code: generatedCode,
       lastEdited: new Date().toLocaleDateString(),
     };
-
     const savedProjects = localStorage.getItem("projects");
     const projects = savedProjects ? JSON.parse(savedProjects) : [];
     const existingProjectIndex = projects.findIndex(
@@ -435,105 +408,135 @@ button:hover {
     } else {
       projects.push(newProject);
     }
-
     localStorage.setItem("projects", JSON.stringify(projects));
     alert("Project saved successfully!");
   };
 
   const handleCreateDocumentation = () => {
     navigate("/documentation", {
-      state: {
-        projectName,
-        initialPrompt: prompt,
-        code: generatedCode,
-      },
+      state: { projectName, initialPrompt: prompt, code: generatedCode },
     });
   };
 
+  const toggleFullScreenPreview = () => {
+    if (!isLivePreview) {
+      // Enter full-screen mode
+      if (previewRef.current) {
+        previewRef.current.requestFullscreen().then(() => {
+          setIsLivePreview(true);
+        }).catch((err) => {
+          console.error("Failed to enter fullscreen:", err);
+          setError("Failed to enter full-screen mode");
+        });
+      }
+    } else {
+      // Exit full-screen mode
+      if (document.fullscreenElement) {
+        document.exitFullscreen().then(() => {
+          setIsLivePreview(false);
+        }).catch((err) => {
+          console.error("Failed to exit fullscreen:", err);
+          setError("Failed to exit full-screen mode");
+        });
+      }
+    }
+  };
+
+  // Listen for fullscreen changes to sync state
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsLivePreview(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col m-0 p-0">
-      <div className="bg-white border-b p-4">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">{projectName}</h2>
-            <div className="flex space-x-2">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-[#1A1A2E] via-[#16213E] to-[#0F3460] text-white">
+      {/* Header Section */}
+      <div className="bg-[#0F3460] p-6 border-b border-[#E94560]/20 shadow-lg">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold tracking-wide text-white">
+              {projectName}
+            </h2>
+            <div className="flex space-x-4">
               <button
                 onClick={handleSaveProject}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="px-6 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full hover:from-green-600 hover:to-teal-600 transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading || !generatedCode.html}
               >
                 Save Project
               </button>
               <button
                 onClick={handleCreateDocumentation}
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center"
+                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full hover:from-purple-700 hover:to-pink-600 flex items-center transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading || !generatedCode.html}
               >
-                <BookOpen className="w-4 h-4 mr-1" />
-                Create Documentation
+                <BookOpen className="w-5 h-5 mr-2" />
+                Create Docs
               </button>
             </div>
           </div>
 
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4">
-              <p className="text-red-700">{error}</p>
+            <div className="bg-red-500/20 border-l-4 border-red-500 p-4 rounded-lg mb-6">
+              <p className="text-red-300">{error}</p>
             </div>
           )}
 
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">
+          <div className="space-y-6">
+            <div className="bg-[#16213E] p-6 rounded-2xl border border-[#E94560]/30 hover:shadow-xl transition-all">
+              <h3 className="text-xl font-semibold mb-3 text-white">
                 Upload Login Form Image
               </h3>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                className="block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-full file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-blue-50 file:text-blue-700
-                  hover:file:bg-blue-100"
+                className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#E94560]/20 file:text-[#E94560] hover:file:bg-[#E94560]/30 disabled:opacity-50"
                 disabled={isLoading}
               />
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-400">
                 Upload a login form screenshot/mockup (PNG, JPG)
               </p>
             </div>
 
-            <div>
+            <div className="bg-[#16213E] p-6 rounded-2xl border border-[#E94560]/30 hover:shadow-xl transition-all">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Describe what you want to build (e.g., 'A login form with username and password fields')..."
-                className="w-full h-32 p-4 border rounded-lg resize-none"
+                className="w-full h-32 p-4 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560] resize-none"
               />
               <button
                 onClick={() => handleInitialGeneration()}
                 disabled={isLoading}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                className="mt-4 px-6 py-3 bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white rounded-full hover:from-[#FF6B9E] hover:to-[#8A0B9E] transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Generating..." : "Generate Code"}
               </button>
             </div>
 
             {generatedCode.combined && (
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
+              <div className="bg-[#16213E] p-6 rounded-2xl border border-[#E94560]/30 hover:shadow-xl transition-all">
+                <h3 className="text-xl font-semibold mb-3 text-white">
                   Modify Existing Code
                 </h3>
                 <textarea
                   value={modificationPrompt}
                   onChange={(e) => setModificationPrompt(e.target.value)}
                   placeholder="Describe your modifications (e.g., 'Change the button color to green')..."
-                  className="w-full h-24 p-4 border rounded-lg resize-none"
+                  className="w-full h-24 p-4 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560] resize-none"
                 />
                 <button
                   onClick={handleModification}
                   disabled={isModifying}
-                  className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                  className="mt-4 px-6 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-full hover:from-green-600 hover:to-teal-600 transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isModifying ? "Modifying..." : "Apply Changes"}
                 </button>
@@ -543,25 +546,41 @@ button:hover {
         </div>
       </div>
 
+      {/* Generated Code and Preview Section */}
       {generatedCode.combined && (
-        <div className="flex flex-col">
-          <div className="w-full bg-white p-6 border-b">
-            <h2 className="text-2xl font-semibold mb-4">Generated Code</h2>
-            <div className="flex space-x-4 mb-4 overflow-x-auto">
+        <div className="flex-1 flex flex-col">
+          <div className="w-full bg-[#16213E] p-6 border-b border-[#E94560]/20">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-white">Generated Code</h2>
+              <button
+                onClick={toggleFullScreenPreview}
+                className={`px-4 py-2 rounded-full flex items-center transform hover:scale-105 transition-all ${
+                  isLivePreview
+                    ? "bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white"
+                    : "bg-[#0F3460] text-gray-300 hover:bg-[#E94560]/20"
+                }`}
+              >
+                <Eye className="w-5 h-5 mr-2" />
+                {isLivePreview ? "Exit Full Screen" : "Full Screen Preview"}
+              </button>
+            </div>
+
+            <div className="flex space-x-4 mb-6 overflow-x-auto">
               {["combined", "html", "css", "javascript"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setCurrentTab(tab)}
-                  className={`px-4 py-2 rounded-lg whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-full whitespace-nowrap transform hover:scale-105 transition-all ${
                     currentTab === tab
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
+                      ? "bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white"
+                      : "bg-[#0F3460] text-gray-300 hover:bg-[#E94560]/20"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
               ))}
             </div>
+
             <textarea
               value={generatedCode[currentTab]}
               onChange={(e) => {
@@ -573,29 +592,33 @@ button:hover {
                     currentTab === "combined"
                       ? newValue
                       : `
-                  <!DOCTYPE html>
-                  <html lang="en">
-                  <head>
-                      <meta charset="UTF-8">
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                      <style>
-                      ${prev.css}
-                      </style>
-                  </head>
-                  <body>
-                      ${prev.html}
-                      <script>
-                      ${prev.javascript}
-                      </script>
-                  </body>
-                  </html>`,
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                        ${prev.css}
+                        </style>
+                    </head>
+                    <body>
+                        ${prev.html}
+                        <script>
+                        ${prev.javascript}
+                        </script>
+                    </body>
+                    </html>`,
                 }));
               }}
-              className="w-full h-96 p-4 font-mono text-sm bg-white border rounded-lg"
+              className="w-full h-96 p-4 font-mono text-sm bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560]"
             />
           </div>
 
-          <div className="w-full bg-gray-50 h-screen">
+          {/* Preview Section */}
+          <div
+            ref={previewRef}
+            className="w-full bg-[#1A1A2E] flex-1"
+          >
             <InteractivePreview
               htmlContent={generatedCode.combined}
               onGenerateCode={handlePreviewGeneration}

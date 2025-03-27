@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, X, Trophy } from "lucide-react";
 
+// Define QUESTIONS array
 const QUESTIONS = [
   {
     id: 1,
@@ -109,7 +110,7 @@ const QUESTIONS = [
   },
 ];
 
-// New coding challenge questions
+// Define CODE_CHALLENGES array
 const CODE_CHALLENGES = [
   {
     type: "image",
@@ -328,69 +329,58 @@ const WebDevChallenge = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1A2E] via-[#16213E] to-[#0F3460] py-8 px-4 text-white">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center mb-8">
           <button
             onClick={() => navigate("/")}
-            className="mr-4 p-2 rounded-full hover:bg-gray-200 transition-colors"
+            className="mr-4 p-2 rounded-full hover:bg-[#E94560]/20 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl font-bold tracking-wide">
             Web Development Challenge
           </h1>
         </div>
 
         {/* Challenge type selector */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="bg-[#16213E] rounded-2xl border border-[#E94560]/30 p-4 mb-6 shadow-md hover:shadow-xl transition-all">
           <div className="flex justify-center flex-wrap gap-3">
-            <button
-              onClick={() => setChallengeType("quiz")}
-              className={`px-6 py-2 rounded-md transition-colors ${
-                challengeType === "quiz"
-                  ? "bg-blue-600 text-white"
-                  : "border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Multiple Choice Quiz
-            </button>
-            <button
-              onClick={() => setChallengeType("code")}
-              className={`px-6 py-2 rounded-md transition-colors ${
-                challengeType === "code"
-                  ? "bg-blue-600 text-white"
-                  : "border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Coding Challenge
-            </button>
-            <button
-              onClick={() => {
-                setChallengeType("codeFromImage");
-                setImageChallengeCompleted(false);
-                setUserInput("");
-              }}
-              className={`px-6 py-2 rounded-md transition-colors ${
-                challengeType === "codeFromImage"
-                  ? "bg-blue-600 text-white"
-                  : "border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Code from Image
-            </button>
+            {["quiz", "code", "codeFromImage"].map((type) => (
+              <button
+                key={type}
+                onClick={() => {
+                  setChallengeType(type);
+                  if (type === "codeFromImage") {
+                    setImageChallengeCompleted(false);
+                    setUserInput("");
+                  }
+                }}
+                className={`px-6 py-2 rounded-full transition-all transform hover:scale-105 ${
+                  challengeType === type
+                    ? "bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white"
+                    : "bg-[#0F3460] text-gray-300 hover:bg-[#E94560]/20"
+                }`}
+              >
+                {type === "quiz"
+                  ? "Multiple Choice Quiz"
+                  : type === "code"
+                  ? "Coding Challenge"
+                  : "Code from Image"}
+              </button>
+            ))}
           </div>
         </div>
 
         {challengeType === "quiz" && !challengeComplete ? (
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-[#16213E] rounded-2xl border border-[#E94560]/30 p-6 shadow-md">
             <div className="flex justify-between items-center mb-6">
-              <div className="text-sm font-medium text-gray-500">
+              <div className="text-sm font-medium text-gray-400">
                 Question {currentQuestionIndex + 1} of {QUESTIONS.length}
               </div>
               <div
                 className={`font-medium ${
-                  timer <= 10 ? "text-red-500" : "text-blue-600"
+                  timer <= 10 ? "text-red-400" : "text-[#E94560]"
                 }`}
               >
                 Time: {timer}s
@@ -401,34 +391,33 @@ const WebDevChallenge = () => {
               <h2 className="text-xl font-semibold mb-6">
                 {currentQuestion.question}
               </h2>
-
               <div className="space-y-3">
                 {currentQuestion.options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => !answered && handleAnswer(option)}
                     disabled={answered}
-                    className={`w-full p-4 text-left rounded-md border transition-colors ${
+                    className={`w-full p-4 text-left rounded-md border transition-all ${
                       answered && option === currentQuestion.correctAnswer
-                        ? "bg-green-100 border-green-500"
+                        ? "bg-green-500/20 border-green-500"
                         : answered &&
                           option === selectedAnswer &&
                           option !== currentQuestion.correctAnswer
-                        ? "bg-red-100 border-red-500"
+                        ? "bg-red-500/20 border-red-500"
                         : option === selectedAnswer
-                        ? "bg-blue-100 border-blue-500"
-                        : "border-gray-300 hover:bg-gray-50"
+                        ? "bg-[#E94560]/20 border-[#E94560]"
+                        : "border-[#E94560]/30 bg-[#0F3460] hover:bg-[#E94560]/10"
                     }`}
                   >
                     <div className="flex justify-between items-center">
                       <span>{option}</span>
                       {answered && option === currentQuestion.correctAnswer && (
-                        <Check className="w-5 h-5 text-green-600" />
+                        <Check className="w-5 h-5 text-green-400" />
                       )}
                       {answered &&
                         option === selectedAnswer &&
                         option !== currentQuestion.correctAnswer && (
-                          <X className="w-5 h-5 text-red-600" />
+                          <X className="w-5 h-5 text-red-400" />
                         )}
                     </div>
                   </button>
@@ -437,20 +426,20 @@ const WebDevChallenge = () => {
             </div>
 
             {answered && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                <h3 className="font-medium mb-2">Explanation:</h3>
-                <p>{currentQuestion.explanation}</p>
+              <div className="mb-6 p-4 bg-[#0F3460] rounded-md border border-[#E94560]/30">
+                <h3 className="font-medium mb-2 text-gray-200">Explanation:</h3>
+                <p className="text-gray-300">{currentQuestion.explanation}</p>
               </div>
             )}
 
             <div className="flex justify-between items-center">
-              <div className="font-medium">
+              <div className="font-medium text-gray-200">
                 Score: {score}/{currentQuestionIndex + (answered ? 1 : 0)}
               </div>
               {answered && (
                 <button
                   onClick={nextQuestion}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-6 py-2 bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white rounded-full hover:from-[#FF6B9E] hover:to-[#8A0B9E] transform hover:scale-105 transition-all"
                 >
                   {currentQuestionIndex < QUESTIONS.length - 1
                     ? "Next Question"
@@ -460,27 +449,27 @@ const WebDevChallenge = () => {
             </div>
           </div>
         ) : challengeType === "quiz" && challengeComplete ? (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <div className="bg-[#16213E] rounded-2xl border border-[#E94560]/30 p-8 text-center shadow-md">
             <div className="flex justify-center mb-6">
-              <div className="bg-yellow-100 p-4 rounded-full">
-                <Trophy className="w-12 h-12 text-yellow-500" />
+              <div className="bg-yellow-500/20 p-4 rounded-full border border-yellow-500/50">
+                <Trophy className="w-12 h-12 text-yellow-400" />
               </div>
             </div>
             <h2 className="text-2xl font-bold mb-2">Challenge Complete!</h2>
             <p className="text-lg mb-6">
               You scored{" "}
-              <span className="font-bold text-blue-600">{score}</span> out of{" "}
+              <span className="font-bold text-[#E94560]">{score}</span> out of{" "}
               <span className="font-bold">{QUESTIONS.length}</span>
             </p>
 
             <div className="mb-8">
-              <div className="w-full bg-gray-200 rounded-full h-4">
+              <div className="w-full bg-[#0F3460] rounded-full h-4">
                 <div
-                  className="bg-blue-600 h-4 rounded-full"
+                  className="bg-gradient-to-r from-[#E94560] to-[#6A0572] h-4 rounded-full"
                   style={{ width: `${(score / QUESTIONS.length) * 100}%` }}
                 ></div>
               </div>
-              <div className="mt-2 text-sm text-gray-600">
+              <div className="mt-2 text-sm text-gray-400">
                 {score === QUESTIONS.length && "Perfect score! Amazing job!"}
                 {score >= QUESTIONS.length * 0.8 &&
                   score < QUESTIONS.length &&
@@ -496,25 +485,25 @@ const WebDevChallenge = () => {
             <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
               <button
                 onClick={restartChallenge}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="px-6 py-2 bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white rounded-full hover:from-[#FF6B9E] hover:to-[#8A0B9E] transform hover:scale-105 transition-all"
               >
                 Try Again
               </button>
               <button
                 onClick={() => navigate("/")}
-                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                className="px-6 py-2 bg-[#0F3460] text-gray-300 rounded-full hover:bg-[#E94560]/20 transform hover:scale-105 transition-all"
               >
                 Return Home
               </button>
             </div>
           </div>
         ) : challengeType === "code" ? (
-          <div className="bg-white shadow-md rounded-lg p-6 text-center">
+          <div className="bg-[#16213E] shadow-md rounded-2xl p-6 text-center border border-[#E94560]/30">
             <h2 className="text-xl font-bold mb-4">Coding Challenge</h2>
-            <p className="mb-2">Answer the following:</p>
+            <p className="mb-2 text-gray-300">Answer the following:</p>
 
             {/* Timer */}
-            <div className="text-red-600 font-bold mb-4">
+            <div className="text-red-400 font-bold mb-4">
               ⏳ Time Left: {Math.floor(codeTimeLeft / 60)}:
               {(codeTimeLeft % 60).toString().padStart(2, "0")}
             </div>
@@ -526,19 +515,19 @@ const WebDevChallenge = () => {
                   <img
                     src={currentCodeChallenge.imageUrl}
                     alt="Challenge"
-                    className="mx-auto w-32 h-32 object-contain"
+                    className="mx-auto w-32 h-32 object-contain rounded-md border border-[#E94560]/30"
                   />
                 </div>
               )}
 
             {/* Show text-based question */}
-            <div className="bg-gray-100 p-4 rounded-md font-mono">
+            <div className="bg-[#0F3460] p-4 rounded-md font-mono text-gray-200 border border-[#E94560]/30">
               <p>{currentCodeChallenge?.question || "Loading question..."}</p>
             </div>
 
             {/* Input field for answer */}
             <textarea
-              className="w-full p-2 border rounded-md mt-4 h-32 font-mono"
+              className="w-full p-2 border border-[#E94560]/30 rounded-md mt-4 h-32 font-mono bg-[#0F3460] text-white focus:outline-none focus:ring-2 focus:ring-[#E94560]"
               placeholder="Type your answer..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
@@ -548,7 +537,7 @@ const WebDevChallenge = () => {
             <div className="flex justify-center mt-4 space-x-3">
               <button
                 onClick={checkCodeAnswer}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                className="px-4 py-2 bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white rounded-full hover:from-[#FF6B9E] hover:to-[#8A0B9E] transform hover:scale-105 transition-all"
               >
                 Submit Answer
               </button>
@@ -556,18 +545,18 @@ const WebDevChallenge = () => {
               {/* Next Question Button */}
               <button
                 onClick={loadNewCodeChallenge}
-                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                className="px-4 py-2 bg-[#0F3460] text-gray-300 rounded-full hover:bg-[#E94560]/20 transform hover:scale-105 transition-all"
               >
                 Skip Question 🔄
               </button>
             </div>
           </div>
         ) : challengeType === "codeFromImage" ? (
-          <div className="bg-white shadow-md rounded-lg p-6">
+          <div className="bg-[#16213E] shadow-md rounded-2xl p-6 border border-[#E94560]/30">
             <h2 className="text-xl font-bold mb-4 text-center">
               Login Form Challenge
             </h2>
-            <p className="mb-6 text-center">
+            <p className="mb-6 text-center text-gray-300">
               Create the HTML for a login form based on the image below. Include
               form, label, input, and button elements.
             </p>
@@ -577,15 +566,15 @@ const WebDevChallenge = () => {
               <img
                 src="/login form screenshot.png"
                 alt="Login Form Challenge"
-                className="max-w-full rounded-md shadow-md border border-gray-200"
+                className="max-w-full rounded-md shadow-md border border-[#E94560]/30"
                 style={{ maxHeight: "300px" }}
               />
             </div>
 
             {/* Requirements */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-md">
-              <h3 className="font-medium mb-2">Requirements:</h3>
-              <ul className="list-disc pl-5 space-y-1">
+            <div className="mb-6 p-4 bg-[#0F3460] rounded-md border border-[#E94560]/30">
+              <h3 className="font-medium mb-2 text-gray-200">Requirements:</h3>
+              <ul className="list-disc pl-5 space-y-1 text-gray-300">
                 <li>Create a form element</li>
                 <li>Include username and password input fields</li>
                 <li>Add appropriate labels for each field</li>
@@ -599,7 +588,7 @@ const WebDevChallenge = () => {
 
             {/* Input field for answer */}
             <textarea
-              className="w-full p-3 border rounded-md mt-4 h-60 font-mono text-sm"
+              className="w-full p-3 border border-[#E94560]/30 rounded-md mt-4 h-60 font-mono text-sm bg-[#0F3460] text-white focus:outline-none focus:ring-2 focus:ring-[#E94560] disabled:opacity-50"
               placeholder="Write your HTML solution here..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
@@ -611,13 +600,13 @@ const WebDevChallenge = () => {
               {!imageChallengeCompleted ? (
                 <button
                   onClick={validateImageChallenge}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-6 py-3 bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white rounded-full hover:from-[#FF6B9E] hover:to-[#8A0B9E] transform hover:scale-105 transition-all"
                 >
                   Submit Solution
                 </button>
               ) : (
                 <>
-                  <div className="px-6 py-3 bg-green-100 text-green-800 rounded-md border border-green-300">
+                  <div className="px-6 py-3 bg-green-500/20 text-green-300 rounded-md border border-green-500/50">
                     Challenge completed! Great job!
                   </div>
                   <button
@@ -625,7 +614,7 @@ const WebDevChallenge = () => {
                       setImageChallengeCompleted(false);
                       setUserInput("");
                     }}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-[#E94560] to-[#6A0572] text-white rounded-full hover:from-[#FF6B9E] hover:to-[#8A0B9E] transform hover:scale-105 transition-all"
                   >
                     Try Again
                   </button>

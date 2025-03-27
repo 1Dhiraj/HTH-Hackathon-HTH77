@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
 import os
 import groq
+from datetime import datetime
 
 load_dotenv()
 
@@ -377,15 +378,40 @@ async def modify_code(user_input: UserInput):
     try:
         if not user_input.existingCode:
             raise HTTPException(status_code=400, detail="No existing code provided")
-            
-        stdout, stderr, returncode = await run_groq(
-            construct_modification_prompt(user_input),
-            temperature=0.3
-        )
+        
+        # Add logging for diagnostics
+        logging.debug(f"Modification Request Details:")
+        logging.debug(f"Prompt: {user_input.prompt}")
+        logging.debug(f"Modification Type: {user_input.modificationType}")
+        
+        # Construct modification prompt
+        full_prompt = construct_modification_prompt(user_input)
+        logging.debug(f"Full Prompt:\n{full_prompt}")
+        
+        # Run Groq with detailed error handling
+        try:
+            stdout, stderr, returncode = await run_groq(
+                full_prompt,
+                temperature=0.3
+            )
+        except Exception as groq_error:
+            logging.error(f"Groq API Error: {str(groq_error)}")
+            raise HTTPException(status_code=500, detail=f"Groq API Error: {str(groq_error)}")
+        
+        # More robust error checking
+        if not stdout:
+            logging.warning("No output received from Groq")
+            return {
+                "code": user_input.existingCode,
+                "message": "No modifications suggested"
+            }
         
         cleaned_output = clean_text(stdout)
+        logging.debug(f"Cleaned Output:\n{cleaned_output}")
+        
         code_blocks = extract_code_blocks(cleaned_output)
         
+        # Fallback to existing code if no modifications
         for key in ['html', 'css', 'javascript']:
             if not code_blocks[key].strip():
                 code_blocks[key] = user_input.existingCode.get(key, '')
@@ -411,7 +437,7 @@ async def modify_code(user_input: UserInput):
         return {"code": code_blocks}
         
     except Exception as e:
-        logging.error(f"Modification error: {str(e)}")
+        logging.error(f"Comprehensive Modification Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze-image")
@@ -540,6 +566,80 @@ async def parse_html(content: dict):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+        
+@app.post("/ai-tutor")
+async def ai_tutor(input_data: dict):
+    try:
+        prompt = input_data.get('prompt', '').strip().lower()  # Lowercase for easier matching
+        context = input_data.get('context', 'web development')
+        
+        if not prompt:
+            logging.warning("Empty prompt received")
+            return {
+                "status": "error",
+                "message": "Please provide a valid question or prompt.",
+                "response": None
+            }
+        
+        # Check for simple greetings and respond formally
+        greetings = ["hi", "hello", "hey", "hi there"]
+        if prompt in greetings:
+            logging.debug(f"Detected greeting: {prompt}")
+            return {
+                "status": "success",
+                "context": context,
+                "response": "Good day! How may I assist you with your web development inquiries today?",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # Full prompt for non-greetings with formal tone
+        full_prompt = f"""You are an AI tutor specializing in web development. 
+Provide a formal, educational response to the following question, maintaining a professional and courteous tone:
+
+Context: {context}
+Question: {prompt}
+
+Guidelines:
+1. Explain concepts clearly and professionally for learners
+2. Include practical examples where applicable
+3. Present complex topics in an organized, step-by-step manner
+4. Offer additional resources or guidance as appropriate
+
+Response Format:
+- Begin with a concise, formal explanation
+- Provide a structured breakdown of steps
+- Include a relevant code example if applicable
+- Conclude with formal suggestions for further learning"""
+        
+        logging.debug(f"Sending prompt to Groq: {full_prompt}")
+        stdout, stderr, returncode = await run_groq(full_prompt, temperature=0.7)
+        logging.debug(f"Raw Groq Response: {stdout}")
+        
+        cleaned_response = clean_text(stdout)
+        if not cleaned_response:
+            logging.warning("Empty response from Groq after cleaning")
+            return {
+                "status": "error",
+                "message": "Received an empty response from the AI",
+                "response": None
+            }
+        
+        logging.info("Successfully generated tutor response")
+        return {
+            "status": "success",
+            "context": context,
+            "response": cleaned_response,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logging.error(f"AI Tutor Error: {str(e)}", exc_info=True)
+        return {
+            "status": "error", 
+            "message": f"An unexpected error occurred: {str(e)}",
+            "response": None
+        }
 
 if __name__ == "__main__":
     import uvicorn
