@@ -109,6 +109,67 @@ const QUESTIONS = [
   },
 ];
 
+// New coding challenge questions
+const CODE_CHALLENGES = [
+  {
+    type: "image",
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/6/61/HTML5_logo_and_wordmark.svg",
+    question: "Write the basic structure of an HTML page.",
+    correctAnswer:
+      "<html>\n  <head>\n    <title>My Page</title>\n  </head>\n  <body>\n    <h1>Hello World</h1>\n  </body>\n</html>",
+    hint: "Start with <!DOCTYPE html>.",
+  },
+  {
+    type: "text",
+    question: "What is the correct syntax for a JavaScript arrow function?",
+    correctAnswer: "() => {}",
+    hint: "It uses '=>' syntax.",
+  },
+  {
+    type: "text",
+    question: "Which HTML tag is used to create a hyperlink?",
+    correctAnswer: "<a>",
+    hint: "It starts with 'a'.",
+  },
+  {
+    type: "image",
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/d/d5/CSS3_logo_and_wordmark.svg",
+    question: "Write a CSS rule to make all <p> elements red.",
+    correctAnswer: "p {\n  color: red;\n}",
+    hint: "Use the color property.",
+  },
+  {
+    type: "text",
+    question: "Which CSS property is used to change the background color?",
+    correctAnswer: "background-color",
+    hint: "It starts with 'background-'.",
+  },
+  {
+    type: "image",
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png",
+    question: "Write a JavaScript function that returns 'Hello, World!'.",
+    correctAnswer: 'function greet() {\n  return "Hello, World!";\n}',
+    hint: "Use the return keyword.",
+  },
+  {
+    type: "image",
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png",
+    question: "Write a JavaScript function to add two numbers.",
+    correctAnswer: "function add(a, b) {\n  return a + b;\n}",
+    hint: "Define a function with two parameters.",
+  },
+  {
+    type: "text",
+    question: "Which keyword is used to declare a variable in JavaScript?",
+    correctAnswer: "var, let, const",
+    hint: "There are three ways to declare variables.",
+  },
+];
+
 const WebDevChallenge = () => {
   const navigate = useNavigate();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -119,27 +180,81 @@ const WebDevChallenge = () => {
   const [timer, setTimer] = useState(30); // 30 seconds per question
   const [isTimerRunning, setIsTimerRunning] = useState(true);
 
+  // State for challenge type (quiz or coding)
+  const [challengeType, setChallengeType] = useState("quiz");
+
+  // States for coding challenge
+  const [userInput, setUserInput] = useState("");
+  const [currentCodeChallenge, setCurrentCodeChallenge] = useState(null);
+  const [codeTimeLeft, setCodeTimeLeft] = useState(180); // 3-minute timer
+
   const currentQuestion = QUESTIONS[currentQuestionIndex];
 
   useEffect(() => {
     let interval = null;
 
-    if (isTimerRunning && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
-    } else if (timer === 0 && !answered) {
-      handleAnswer(null); // Time's up, mark as incorrect
+    if (challengeType === "quiz") {
+      if (isTimerRunning && timer > 0) {
+        interval = setInterval(() => {
+          setTimer((prevTimer) => prevTimer - 1);
+        }, 1000);
+      } else if (timer === 0 && !answered) {
+        handleAnswer(null); // Time's up, mark as incorrect
+      }
     }
 
     return () => clearInterval(interval);
-  }, [timer, isTimerRunning, answered]);
+  }, [timer, isTimerRunning, answered, challengeType]);
 
   // Reset timer when moving to next question
   useEffect(() => {
-    setTimer(30);
-    setIsTimerRunning(true);
-  }, [currentQuestionIndex]);
+    if (challengeType === "quiz") {
+      setTimer(30);
+      setIsTimerRunning(true);
+    }
+  }, [currentQuestionIndex, challengeType]);
+
+  // Code challenge functions
+  const loadNewCodeChallenge = () => {
+    const randomIndex = Math.floor(Math.random() * CODE_CHALLENGES.length);
+    setCurrentCodeChallenge(CODE_CHALLENGES[randomIndex]);
+    setUserInput(""); // Clear input field for new question
+    setCodeTimeLeft(180); // Reset timer for new question
+  };
+
+  useEffect(() => {
+    if (challengeType === "code") {
+      loadNewCodeChallenge();
+    }
+  }, [challengeType]);
+
+  useEffect(() => {
+    if (challengeType === "code") {
+      if (codeTimeLeft <= 0) {
+        alert("⏳ Time's up! The quiz will reset.");
+        loadNewCodeChallenge();
+      }
+      const timer = setInterval(() => {
+        setCodeTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [codeTimeLeft, challengeType]);
+
+  const checkCodeAnswer = () => {
+    if (
+      userInput.trim().toLowerCase() ===
+      currentCodeChallenge.correctAnswer.toLowerCase()
+    ) {
+      setTimeout(() => {
+        alert("✅ Correct! Well done!");
+        loadNewCodeChallenge(); // Load the next question after alert
+      }, 10);
+    } else {
+      alert(`❌ Incorrect! Try again. Hint: ${currentCodeChallenge.hint}`);
+    }
+  };
 
   const handleAnswer = (answer) => {
     setSelectedAnswer(answer);
@@ -186,7 +301,33 @@ const WebDevChallenge = () => {
           </h1>
         </div>
 
-        {!challengeComplete ? (
+        {/* Challenge type selector */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={() => setChallengeType("quiz")}
+              className={`px-6 py-2 rounded-md transition-colors ${
+                challengeType === "quiz"
+                  ? "bg-blue-600 text-white"
+                  : "border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Multiple Choice Quiz
+            </button>
+            <button
+              onClick={() => setChallengeType("code")}
+              className={`px-6 py-2 rounded-md transition-colors ${
+                challengeType === "code"
+                  ? "bg-blue-600 text-white"
+                  : "border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Coding Challenge
+            </button>
+          </div>
+        </div>
+
+        {challengeType === "quiz" && !challengeComplete ? (
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
               <div className="text-sm font-medium text-gray-500">
@@ -263,7 +404,7 @@ const WebDevChallenge = () => {
               )}
             </div>
           </div>
-        ) : (
+        ) : challengeType === "quiz" && challengeComplete ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <div className="flex justify-center mb-6">
               <div className="bg-yellow-100 p-4 rounded-full">
@@ -312,7 +453,61 @@ const WebDevChallenge = () => {
               </button>
             </div>
           </div>
-        )}
+        ) : challengeType === "code" ? (
+          <div className="bg-white shadow-md rounded-lg p-6 text-center">
+            <h2 className="text-xl font-bold mb-4">Coding Challenge</h2>
+            <p className="mb-2">Answer the following:</p>
+
+            {/* Timer */}
+            <div className="text-red-600 font-bold mb-4">
+              ⏳ Time Left: {Math.floor(codeTimeLeft / 60)}:
+              {(codeTimeLeft % 60).toString().padStart(2, "0")}
+            </div>
+
+            {/* Show image if the question type is "image" */}
+            {currentCodeChallenge?.type === "image" &&
+              currentCodeChallenge.imageUrl && (
+                <div className="mb-4">
+                  <img
+                    src={currentCodeChallenge.imageUrl}
+                    alt="Challenge"
+                    className="mx-auto w-32 h-32 object-contain"
+                  />
+                </div>
+              )}
+
+            {/* Show text-based question */}
+            <div className="bg-gray-100 p-4 rounded-md font-mono">
+              <p>{currentCodeChallenge?.question || "Loading question..."}</p>
+            </div>
+
+            {/* Input field for answer */}
+            <textarea
+              className="w-full p-2 border rounded-md mt-4 h-32 font-mono"
+              placeholder="Type your answer..."
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+            />
+
+            {/* Submit Answer Button */}
+            <div className="flex justify-center mt-4 space-x-3">
+              <button
+                onClick={checkCodeAnswer}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Submit Answer
+              </button>
+
+              {/* Next Question Button */}
+              <button
+                onClick={loadNewCodeChallenge}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+              >
+                Skip Question 🔄
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
