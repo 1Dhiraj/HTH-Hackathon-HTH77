@@ -121,6 +121,15 @@ const CODE_CHALLENGES = [
     hint: "Start with <!DOCTYPE html>.",
   },
   {
+    type: "image",
+    imageUrl: "/login form screenshot.png",
+    question:
+      "Create the HTML for this login form with username and password fields.",
+    correctAnswer:
+      '<form>\n  <div>\n    <label for="username">Username</label>\n    <input type="text" id="username" name="username" required>\n  </div>\n  <div>\n    <label for="password">Password</label>\n    <input type="password" id="password" name="password" required>\n  </div>\n  <button type="submit">Login</button>\n</form>',
+    hint: "Use form, label, input, and button elements. Don't forget to set proper input types.",
+  },
+  {
     type: "text",
     question: "What is the correct syntax for a JavaScript arrow function?",
     correctAnswer: "() => {}",
@@ -188,6 +197,9 @@ const WebDevChallenge = () => {
   const [currentCodeChallenge, setCurrentCodeChallenge] = useState(null);
   const [codeTimeLeft, setCodeTimeLeft] = useState(180); // 3-minute timer
 
+  // New state for image-based coding challenge
+  const [imageChallengeCompleted, setImageChallengeCompleted] = useState(false);
+
   const currentQuestion = QUESTIONS[currentQuestionIndex];
 
   useEffect(() => {
@@ -213,6 +225,35 @@ const WebDevChallenge = () => {
       setIsTimerRunning(true);
     }
   }, [currentQuestionIndex, challengeType]);
+
+  // Image challenge validation
+  const validateImageChallenge = () => {
+    // Basic validation for login form HTML
+    const input = userInput.toLowerCase();
+
+    const requiredElements = [
+      "<form",
+      "<input",
+      'type="text"',
+      'type="password"',
+      "<button",
+      "username",
+      "password",
+    ];
+
+    const missingElements = requiredElements.filter(
+      (el) => !input.includes(el)
+    );
+
+    if (missingElements.length === 0) {
+      setImageChallengeCompleted(true);
+      alert("✅ Great job! Your solution meets all the requirements.");
+    } else {
+      alert(
+        `❌ Your solution is missing: ${missingElements.join(", ")}. Try again!`
+      );
+    }
+  };
 
   // Code challenge functions
   const loadNewCodeChallenge = () => {
@@ -303,7 +344,7 @@ const WebDevChallenge = () => {
 
         {/* Challenge type selector */}
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center flex-wrap gap-3">
             <button
               onClick={() => setChallengeType("quiz")}
               className={`px-6 py-2 rounded-md transition-colors ${
@@ -323,6 +364,20 @@ const WebDevChallenge = () => {
               }`}
             >
               Coding Challenge
+            </button>
+            <button
+              onClick={() => {
+                setChallengeType("codeFromImage");
+                setImageChallengeCompleted(false);
+                setUserInput("");
+              }}
+              className={`px-6 py-2 rounded-md transition-colors ${
+                challengeType === "codeFromImage"
+                  ? "bg-blue-600 text-white"
+                  : "border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Code from Image
             </button>
           </div>
         </div>
@@ -505,6 +560,77 @@ const WebDevChallenge = () => {
               >
                 Skip Question 🔄
               </button>
+            </div>
+          </div>
+        ) : challengeType === "codeFromImage" ? (
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-bold mb-4 text-center">
+              Login Form Challenge
+            </h2>
+            <p className="mb-6 text-center">
+              Create the HTML for a login form based on the image below. Include
+              form, label, input, and button elements.
+            </p>
+
+            {/* Login Form Image */}
+            <div className="flex justify-center mb-6">
+              <img
+                src="/login form screenshot.png"
+                alt="Login Form Challenge"
+                className="max-w-full rounded-md shadow-md border border-gray-200"
+                style={{ maxHeight: "300px" }}
+              />
+            </div>
+
+            {/* Requirements */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-md">
+              <h3 className="font-medium mb-2">Requirements:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Create a form element</li>
+                <li>Include username and password input fields</li>
+                <li>Add appropriate labels for each field</li>
+                <li>
+                  Set correct input types (text for username, password for
+                  password)
+                </li>
+                <li>Add a submit button with the text "Login"</li>
+              </ul>
+            </div>
+
+            {/* Input field for answer */}
+            <textarea
+              className="w-full p-3 border rounded-md mt-4 h-60 font-mono text-sm"
+              placeholder="Write your HTML solution here..."
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              disabled={imageChallengeCompleted}
+            />
+
+            {/* Submit Answer Button */}
+            <div className="flex justify-center mt-6 space-x-4">
+              {!imageChallengeCompleted ? (
+                <button
+                  onClick={validateImageChallenge}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Submit Solution
+                </button>
+              ) : (
+                <>
+                  <div className="px-6 py-3 bg-green-100 text-green-800 rounded-md border border-green-300">
+                    Challenge completed! Great job!
+                  </div>
+                  <button
+                    onClick={() => {
+                      setImageChallengeCompleted(false);
+                      setUserInput("");
+                    }}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ) : null}
