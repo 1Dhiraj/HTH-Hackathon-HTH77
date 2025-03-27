@@ -7,8 +7,8 @@ import sys
 import subprocess
 import google.generativeai as genai
 from fastapi import UploadFile, File
-from PIL import Image
-import io
+from PIL import Image 
+import io 
 from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
 import os
