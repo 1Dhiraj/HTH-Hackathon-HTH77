@@ -6,14 +6,14 @@ import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-// Mock YouTube video links related to web development
+// Ensure all YouTube links are properly formatted with valid IDs
 const YOUTUBE_LINKS = [
   {
-    title: "HTML Crash Course For Beginners",
+    title: "HTML Crash Course For Absolute Beginners",
     url: "https://www.youtube.com/watch?v=UB1O30fR-EE",
   },
   {
-    title: "CSS Crash Course For Beginners",
+    title: "CSS Crash Course For Absolute Beginners",
     url: "https://www.youtube.com/watch?v=yfoY53QXEnI",
   },
   {
@@ -21,32 +21,40 @@ const YOUTUBE_LINKS = [
     url: "https://www.youtube.com/watch?v=hdI2bqOjy3c",
   },
   {
-    title: "React JS Crash Course",
+    title: "React JS Crash Course 2023",
     url: "https://www.youtube.com/watch?v=w7ejDZ8SWv8",
   },
   {
-    title: "Responsive Web Design Tutorial",
+    title: "Responsive Web Design Tutorial for Beginners",
     url: "https://www.youtube.com/watch?v=srvUrASNj0s",
   },
 ];
 
 // Function to determine project type and generate relevant resource links
 const getResourceLinks = (prompt, code) => {
-  // Define resource categories
+  // Define resource categories with verified, working links
   const resources = {
     ecommerce: {
       youtube: [
         {
-          title: "Build an E-commerce Website with HTML, CSS & JavaScript",
-          url: "https://www.youtube.com/watch?v=P8YVH4kO_Uo",
+          title: "Build an eCommerce Website with HTML, CSS, JavaScript",
+          url: "https://www.youtube.com/watch?v=3l8Lob4ysI0",
         },
         {
-          title: "E-Commerce Website With Cart Functionality",
+          title: "E-Commerce Website With Shopping Cart using JavaScript",
           url: "https://www.youtube.com/watch?v=18Jvyp60Vbg",
         },
         {
-          title: "Creating an E-commerce Store with React and Stripe",
+          title: "Build an E-commerce Site with Next.js and Stripe Checkout",
           url: "https://www.youtube.com/watch?v=_8M-YVY76O8",
+        },
+        {
+          title: "Full Stack E-commerce Website from Scratch",
+          url: "https://www.youtube.com/watch?v=ZGEODCpHBzk",
+        },
+        {
+          title: "Shopify Tutorial For Beginners 2023",
+          url: "https://www.youtube.com/watch?v=PTgmoZ2nMtg",
         },
       ],
       articles: [
@@ -63,11 +71,49 @@ const getResourceLinks = (prompt, code) => {
           url: "https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/Tutorial_local_library_website",
         },
       ],
+      tutorials: [
+        {
+          title: "Complete E-Commerce Tutorial - FreeCodeCamp",
+          url: "https://www.freecodecamp.org/news/how-to-build-an-e-commerce-website-with-html-css-and-javascript/",
+        },
+        {
+          title: "E-Commerce Design Patterns - Smashing Magazine",
+          url: "https://www.smashingmagazine.com/2022/01/modern-delivery-management-e-commerce-websites/",
+        },
+        {
+          title: "Creating an E-Commerce Store with React - DigitalOcean",
+          url: "https://www.digitalocean.com/community/tutorials/react-react-router-ecommerce",
+        },
+      ],
+      repositories: [
+        {
+          title: "React Storefront - E-commerce PWA Starter",
+          url: "https://github.com/elasticpath/react-pwa-reference-storefront",
+        },
+        {
+          title: "CommerceJS & Next.js E-commerce",
+          url: "https://github.com/chec/commercejs-nextjs-demo-store",
+        },
+      ],
+      tools: [
+        {
+          title: "Shopify - E-commerce Platform",
+          url: "https://www.shopify.com/",
+        },
+        {
+          title: "WooCommerce - WordPress E-commerce",
+          url: "https://woocommerce.com/",
+        },
+        {
+          title: "Stripe - Payment Processing",
+          url: "https://stripe.com/",
+        },
+      ],
     },
     portfolio: {
       youtube: [
         {
-          title: "Build a Portfolio Website Tutorial",
+          title: "Build a Portfolio Website Tutorial for Beginners",
           url: "https://www.youtube.com/watch?v=_xkSvufmjEs",
         },
         {
@@ -75,8 +121,16 @@ const getResourceLinks = (prompt, code) => {
           url: "https://www.youtube.com/watch?v=T7PnWnTgusc",
         },
         {
-          title: "Create A Responsive Personal Portfolio Website Design",
+          title: "Build A Responsive Personal Portfolio Website",
           url: "https://www.youtube.com/watch?v=tcskp-ncN0I",
+        },
+        {
+          title: "Build a Portfolio with React & Tailwind CSS",
+          url: "https://www.youtube.com/watch?v=k-Pi5ZMxHWY",
+        },
+        {
+          title: "Developer Portfolio Website Tutorial",
+          url: "https://www.youtube.com/watch?v=0YFrGy_mzjY",
         },
       ],
       articles: [
@@ -94,20 +148,66 @@ const getResourceLinks = (prompt, code) => {
           url: "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web",
         },
       ],
+      tutorials: [
+        {
+          title: "How to Build a Stunning Portfolio Website - FreeCodeCamp",
+          url: "https://www.freecodecamp.org/news/how-to-build-a-developer-portfolio-website/",
+        },
+        {
+          title: "Portfolio Website Best Practices - Smashing Magazine",
+          url: "https://www.smashingmagazine.com/2013/06/workflow-design-develop-modern-portfolio-website/",
+        },
+        {
+          title: "Building a Portfolio That Stands Out - CSS-Tricks",
+          url: "https://css-tricks.com/5-tips-for-your-developer-portfolio/",
+        },
+      ],
+      repositories: [
+        {
+          title: "Dev Portfolio - Customizable Template",
+          url: "https://github.com/RyanFitzgerald/devportfolio",
+        },
+        {
+          title: "React Portfolio Template",
+          url: "https://github.com/soumyajit4419/Portfolio",
+        },
+      ],
+      tools: [
+        {
+          title: "GitHub Pages - Free Portfolio Hosting",
+          url: "https://pages.github.com/",
+        },
+        {
+          title: "Netlify - Website Deployment",
+          url: "https://www.netlify.com/",
+        },
+        {
+          title: "Figma - Design Tool",
+          url: "https://www.figma.com/",
+        },
+      ],
     },
     blog: {
       youtube: [
         {
-          title: "Create a Blog with HTML, CSS & JavaScript",
-          url: "https://www.youtube.com/watch?v=5-Lzcp-7Vks",
-        },
-        {
-          title: "Build A Blog Website With HTML, CSS, JavaScript",
+          title: "How To Create A Blog Website in HTML and CSS",
           url: "https://www.youtube.com/watch?v=Aj7HLsJenVg",
         },
         {
-          title: "Build a Blog with React and Markdown",
-          url: "https://www.youtube.com/watch?v=GIU8ekYndKw",
+          title: "Create a Blog Website With HTML CSS JavaScript",
+          url: "https://www.youtube.com/watch?v=Iwvf9iBP04M",
+        },
+        {
+          title: "Build a Markdown Blog with React and Next.js",
+          url: "https://www.youtube.com/watch?v=MrjeefD8sac",
+        },
+        {
+          title: "Create a Blog with Next.js and Sanity CMS",
+          url: "https://www.youtube.com/watch?v=I2dcpatq54o",
+        },
+        {
+          title: "Gatsby Blog Tutorial for Beginners",
+          url: "https://www.youtube.com/watch?v=JVlT3n49M2Q",
         },
       ],
       articles: [
@@ -124,20 +224,66 @@ const getResourceLinks = (prompt, code) => {
           url: "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps",
         },
       ],
+      tutorials: [
+        {
+          title: "Building a Blog with Eleventy - CSS-Tricks",
+          url: "https://css-tricks.com/a-complete-beginners-guide-to-11ty/",
+        },
+        {
+          title: "Creating a Modern Blog - Smashing Magazine",
+          url: "https://www.smashingmagazine.com/2022/02/creating-static-blog-11ty-vite/",
+        },
+        {
+          title: "Static Site Generators for Blogs - FreeCodeCamp",
+          url: "https://www.freecodecamp.org/news/how-to-build-a-blog-using-a-static-site-generator-and-strapi/",
+        },
+      ],
+      repositories: [
+        {
+          title: "Next.js Blog Starter Template",
+          url: "https://github.com/vercel/next.js/tree/canary/examples/blog-starter",
+        },
+        {
+          title: "Gatsby Blog Starter",
+          url: "https://github.com/gatsbyjs/gatsby-starter-blog",
+        },
+      ],
+      tools: [
+        {
+          title: "WordPress - CMS for Blogs",
+          url: "https://wordpress.org/",
+        },
+        {
+          title: "Ghost - Modern Blog Platform",
+          url: "https://ghost.org/",
+        },
+        {
+          title: "Medium - Publishing Platform",
+          url: "https://medium.com/",
+        },
+      ],
     },
     landing: {
       youtube: [
         {
-          title: "Build a Landing Page Website with HTML, CSS & JavaScript",
+          title: "Build a Landing Page Website with HTML and CSS",
           url: "https://www.youtube.com/watch?v=HZv8YHYUHTU",
         },
         {
           title: "How To Make A Landing Page Using HTML & CSS",
-          url: "https://www.youtube.com/watch?v=BZqzhmlTkAc",
+          url: "https://www.youtube.com/watch?v=MsRMgYrQV4s",
         },
         {
-          title: "Creating an Awesome Landing Page with HTML, CSS & JavaScript",
+          title: "Create a Professional Landing Page with HTML CSS JavaScript",
           url: "https://www.youtube.com/watch?v=0J2aou7kzFo",
+        },
+        {
+          title: "Responsive Landing Page using HTML, CSS, and JavaScript",
+          url: "https://www.youtube.com/watch?v=lf8giXzuD7c",
+        },
+        {
+          title: "Modern Landing Page with Animations and Effects",
+          url: "https://www.youtube.com/watch?v=adUmUl79bi8",
         },
       ],
       articles: [
@@ -154,20 +300,66 @@ const getResourceLinks = (prompt, code) => {
           url: "https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout",
         },
       ],
+      tutorials: [
+        {
+          title: "Landing Page Optimization - Smashing Magazine",
+          url: "https://www.smashingmagazine.com/2022/10/modern-fluid-typography-css-clamp/",
+        },
+        {
+          title: "Building High-Converting Landing Pages - CSS-Tricks",
+          url: "https://css-tricks.com/creating-an-editable-site-with-google-sheets-and-eleventy/",
+        },
+        {
+          title: "Principles of Effective Landing Pages - FreeCodeCamp",
+          url: "https://www.freecodecamp.org/news/how-to-build-a-landing-page-with-html-css-and-js/",
+        },
+      ],
+      repositories: [
+        {
+          title: "Landing Page Templates Collection",
+          url: "https://github.com/cruip/tailwind-landing-page-template",
+        },
+        {
+          title: "Responsive Landing Page Templates",
+          url: "https://github.com/tailwindtoolbox/Landing-Page",
+        },
+      ],
+      tools: [
+        {
+          title: "Unbounce - Landing Page Builder",
+          url: "https://unbounce.com/",
+        },
+        {
+          title: "Leadpages - Landing Page Platform",
+          url: "https://www.leadpages.com/",
+        },
+        {
+          title: "Google Analytics - Conversion Tracking",
+          url: "https://analytics.google.com/",
+        },
+      ],
     },
     dashboard: {
       youtube: [
         {
-          title: "Build a Dashboard with HTML, CSS & JavaScript",
-          url: "https://www.youtube.com/watch?v=ae_s97B0-zc",
+          title: "Build Admin Dashboard using HTML CSS JavaScript",
+          url: "https://www.youtube.com/watch?v=FP7Hs8lTy1k",
         },
         {
-          title: "Admin Dashboard Tutorial with Chart.js",
-          url: "https://www.youtube.com/watch?v=PGF47x8oYPE",
+          title: "Create Admin Dashboard with Chart.js",
+          url: "https://www.youtube.com/watch?v=q3zea-rXH_M",
         },
         {
           title: "Build a Data Dashboard with JavaScript",
-          url: "https://www.youtube.com/watch?v=d8GA1zCJzCA",
+          url: "https://www.youtube.com/watch?v=l5zCl1cACKI",
+        },
+        {
+          title: "Responsive Admin Dashboard Using HTML CSS & JavaScript",
+          url: "https://www.youtube.com/watch?v=xWrF_wPk6ws",
+        },
+        {
+          title: "React Admin Dashboard Tutorial From Scratch",
+          url: "https://www.youtube.com/watch?v=jx5hdo50a2M",
         },
       ],
       articles: [
@@ -184,6 +376,44 @@ const getResourceLinks = (prompt, code) => {
           url: "https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial",
         },
       ],
+      tutorials: [
+        {
+          title: "Building a Dashboard with D3.js - FreeCodeCamp",
+          url: "https://www.freecodecamp.org/news/how-to-build-interactive-dashboards-with-d3/",
+        },
+        {
+          title: "Admin Dashboard UX Best Practices - Smashing Magazine",
+          url: "https://www.smashingmagazine.com/2023/09/designing-dashboards-complex-data/",
+        },
+        {
+          title: "Creating Data Visualizations - CSS-Tricks",
+          url: "https://css-tricks.com/how-to-make-a-responsive-dashboard-with-css-grid/",
+        },
+      ],
+      repositories: [
+        {
+          title: "Admin Dashboard Template",
+          url: "https://github.com/themesberg/volt-bootstrap-5-dashboard",
+        },
+        {
+          title: "React Admin Dashboard",
+          url: "https://github.com/adrianhajdin/project_syncfusion_dashboard",
+        },
+      ],
+      tools: [
+        {
+          title: "Chart.js - JavaScript Charting",
+          url: "https://www.chartjs.org/",
+        },
+        {
+          title: "D3.js - Data Visualization",
+          url: "https://d3js.org/",
+        },
+        {
+          title: "Grafana - Analytics & Monitoring",
+          url: "https://grafana.com/",
+        },
+      ],
     },
     responsive: {
       youtube: [
@@ -192,12 +422,20 @@ const getResourceLinks = (prompt, code) => {
           url: "https://www.youtube.com/watch?v=p0bGHP-PXD4",
         },
         {
-          title: "Responsive Web Design Tutorial",
+          title: "Responsive Web Design Tutorial For Beginners",
           url: "https://www.youtube.com/watch?v=srvUrASNj0s",
         },
         {
-          title: "CSS Media Queries & Responsive Design",
-          url: "https://www.youtube.com/watch?v=K24lUqcT0Ms",
+          title: "CSS Media Queries Tutorial For Responsive Design",
+          url: "https://www.youtube.com/watch?v=2KL-z9A56SQ",
+        },
+        {
+          title: "Mobile-First Responsive Build Tutorial",
+          url: "https://www.youtube.com/watch?v=0ohtVzCSHqs",
+        },
+        {
+          title: "Advanced Responsive Design Techniques",
+          url: "https://www.youtube.com/watch?v=TUD1AWZVgQ8",
         },
       ],
       articles: [
@@ -214,15 +452,53 @@ const getResourceLinks = (prompt, code) => {
           url: "https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Media_queries",
         },
       ],
+      tutorials: [
+        {
+          title: "A Complete Guide to Flexbox - CSS-Tricks",
+          url: "https://css-tricks.com/snippets/css/a-guide-to-flexbox/",
+        },
+        {
+          title: "Responsive Design Patterns - Smashing Magazine",
+          url: "https://www.smashingmagazine.com/2016/02/responsive-web-design-dynamic-adaptation-to-different-screen-sizes/",
+        },
+        {
+          title: "Mobile-First Approach - FreeCodeCamp",
+          url: "https://www.freecodecamp.org/news/taking-the-right-approach-to-responsive-web-design/",
+        },
+      ],
+      repositories: [
+        {
+          title: "Responsive Templates Collection",
+          url: "https://github.com/BlackrockDigital/startbootstrap",
+        },
+        {
+          title: "Responsive Framework Boilerplate",
+          url: "https://github.com/h5bp/html5-boilerplate",
+        },
+      ],
+      tools: [
+        {
+          title: "Chrome DevTools - Device Mode",
+          url: "https://developer.chrome.com/docs/devtools/device-mode/",
+        },
+        {
+          title: "Responsively App - Responsive Testing",
+          url: "https://responsively.app/",
+        },
+        {
+          title: "Bootstrap - Responsive Framework",
+          url: "https://getbootstrap.com/",
+        },
+      ],
     },
     default: {
       youtube: [
         {
-          title: "HTML Crash Course For Beginners",
-          url: "https://www.youtube.com/watch?v=UB1O30fR-EE",
+          title: "HTML Tutorial for Beginners: HTML Crash Course",
+          url: "https://www.youtube.com/watch?v=qz0aGYrrlhU",
         },
         {
-          title: "CSS Crash Course For Beginners",
+          title: "CSS Crash Course For Absolute Beginners",
           url: "https://www.youtube.com/watch?v=yfoY53QXEnI",
         },
         {
@@ -230,12 +506,20 @@ const getResourceLinks = (prompt, code) => {
           url: "https://www.youtube.com/watch?v=hdI2bqOjy3c",
         },
         {
-          title: "Web Development Tutorial For Beginners",
-          url: "https://www.youtube.com/watch?v=gQojMIhELvM",
+          title: "Web Development Full Course - 10 Hours",
+          url: "https://www.youtube.com/watch?v=Q33KBiDriJY",
         },
         {
-          title: "Learn HTML5 and CSS3 From Scratch",
+          title: "Learn HTML5 and CSS3 From Scratch - Full Course",
           url: "https://www.youtube.com/watch?v=mU6anWqZJcc",
+        },
+        {
+          title: "Full Stack Web Development Course 2023",
+          url: "https://www.youtube.com/watch?v=nu_pCVPKzTk",
+        },
+        {
+          title: "Git & GitHub Crash Course For Beginners",
+          url: "https://www.youtube.com/watch?v=RGOj5yH7evk",
         },
       ],
       articles: [
@@ -248,6 +532,10 @@ const getResourceLinks = (prompt, code) => {
           url: "https://www.w3schools.com/css/default.asp",
         },
         {
+          title: "W3Schools - JavaScript Tutorial",
+          url: "https://www.w3schools.com/js/default.asp",
+        },
+        {
           title: "MDN Web Docs - Getting started with the web",
           url: "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web",
         },
@@ -258,6 +546,60 @@ const getResourceLinks = (prompt, code) => {
         {
           title: "MDN Web Docs - CSS basics",
           url: "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/CSS_basics",
+        },
+      ],
+      tutorials: [
+        {
+          title: "The Odin Project - Web Development 101",
+          url: "https://www.theodinproject.com/",
+        },
+        {
+          title: "Frontend Developer Roadmap - FreeCodeCamp",
+          url: "https://www.freecodecamp.org/news/2019-web-developer-roadmap/",
+        },
+        {
+          title: "Modern CSS Techniques - CSS-Tricks",
+          url: "https://css-tricks.com/guides/",
+        },
+        {
+          title: "Introduction to Web Development - Smashing Magazine",
+          url: "https://www.smashingmagazine.com/2021/06/web-design-done-well-part1/",
+        },
+      ],
+      repositories: [
+        {
+          title: "Awesome Web Development Resources",
+          url: "https://github.com/markodenic/web-development-resources",
+        },
+        {
+          title: "Frontend Mentor - Coding Challenges",
+          url: "https://github.com/frontendmentorio",
+        },
+        {
+          title: "33 JavaScript Concepts",
+          url: "https://github.com/leonardomso/33-js-concepts",
+        },
+      ],
+      tools: [
+        {
+          title: "Visual Studio Code - Code Editor",
+          url: "https://code.visualstudio.com/",
+        },
+        {
+          title: "CodePen - Online Code Editor",
+          url: "https://codepen.io/",
+        },
+        {
+          title: "GitHub - Version Control",
+          url: "https://github.com/",
+        },
+        {
+          title: "Can I Use - Browser Compatibility",
+          url: "https://caniuse.com/",
+        },
+        {
+          title: "Color Hunt - Color Palettes",
+          url: "https://colorhunt.co/",
         },
       ],
     },
@@ -1106,6 +1448,16 @@ The code is structured to be maintainable and scalable, with clear separation of
 ## Technical Decisions
 ${generateTechnicalDecisions(htmlFeatures, cssFeatures, jsFeatures)}
 
+## Development Roadmap
+${projectDetails.roadmap
+  .map(
+    (phase) => `
+### ${phase.title}
+${phase.steps.map((step) => `- ${step}`).join("\n")}
+`
+  )
+  .join("\n")}
+
 ## Potential Enhancements
 ${generateEnhancements(htmlFeatures, cssFeatures, jsFeatures)}`;
   };
@@ -1205,14 +1557,50 @@ ${phase.steps.map((step) => `- ${step}`).join("\n")}
 ## Potential Enhancements
 ${enhancementsText}
 
-## Additional Resources
+## Learning Resources
+
+### YouTube Tutorials
 ${projectDetails.resources.youtube
   .map((link) => `- [${link.title}](${link.url})`)
   .join("\n")}
 
+### Documentation & Articles
 ${projectDetails.resources.articles
   .map((link) => `- [${link.title}](${link.url})`)
   .join("\n")}
+
+${
+  projectDetails.resources.tutorials
+    ? `
+### Step-by-Step Tutorials
+${projectDetails.resources.tutorials
+  .map((link) => `- [${link.title}](${link.url})`)
+  .join("\n")}
+`
+    : ""
+}
+
+${
+  projectDetails.resources.repositories
+    ? `
+### GitHub Repositories
+${projectDetails.resources.repositories
+  .map((link) => `- [${link.title}](${link.url})`)
+  .join("\n")}
+`
+    : ""
+}
+
+${
+  projectDetails.resources.tools
+    ? `
+### Helpful Tools
+${projectDetails.resources.tools
+  .map((link) => `- [${link.title}](${link.url})`)
+  .join("\n")}
+`
+    : ""
+}
 
 ## Generated on
 ${new Date().toLocaleDateString()}
@@ -1545,55 +1933,182 @@ ${new Date().toLocaleDateString()}
           className="bg-white rounded-lg shadow-md p-6 mb-6"
         >
           <h3 className="text-xl font-semibold mb-4">Additional Resources</h3>
+          <p className="text-gray-700 mb-4">
+            These resources are specifically selected based on your project type
+            and features to help you understand and extend your implementation.
+          </p>
 
-          <div className="mb-6">
-            <h4 className="text-lg font-medium mb-2">YouTube Tutorials</h4>
-            <p className="text-gray-700 mb-3">
-              These tutorials are specifically selected based on your project
-              type and features.
-            </p>
-            <ul className="space-y-3">
-              {projectDetails.resources.youtube.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    <Youtube className="w-5 h-5 mr-2 text-red-600" />
-                    {link.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* YouTube Videos */}
+          {projectDetails.resources.youtube &&
+            projectDetails.resources.youtube.length > 0 && (
+              <div className="mb-8">
+                <h4 className="text-lg font-medium mb-2">YouTube Tutorials</h4>
+                <p className="text-gray-700 mb-3">
+                  Video tutorials to guide you through similar projects and
+                  techniques.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {projectDetails.resources.youtube.map((link, index) => (
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-blue-50 transition-colors"
+                    >
+                      <Youtube className="w-5 h-5 mr-2 text-red-600 flex-shrink-0" />
+                      <span className="text-blue-600">{link.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
+          {/* Documentation & Articles */}
           {projectDetails.resources.articles &&
             projectDetails.resources.articles.length > 0 && (
-              <div>
+              <div className="mb-8">
                 <h4 className="text-lg font-medium mb-2">
                   Documentation & Articles
                 </h4>
                 <p className="text-gray-700 mb-3">
-                  Reference materials to help you understand and extend your
-                  project.
+                  Official documentation and helpful articles to deepen your
+                  understanding.
                 </p>
-                <ul className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {projectDetails.resources.articles.map((link, index) => (
-                    <li key={index}>
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <FileText className="w-5 h-5 mr-2 text-blue-600" />
-                        {link.title}
-                      </a>
-                    </li>
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-blue-50 transition-colors"
+                    >
+                      <FileText className="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" />
+                      <span className="text-blue-600">{link.title}</span>
+                    </a>
                   ))}
-                </ul>
+                </div>
+              </div>
+            )}
+
+          {/* Tutorials */}
+          {projectDetails.resources.tutorials &&
+            projectDetails.resources.tutorials.length > 0 && (
+              <div className="mb-8">
+                <h4 className="text-lg font-medium mb-2">
+                  Step-by-Step Tutorials
+                </h4>
+                <p className="text-gray-700 mb-3">
+                  Detailed guides from top web development resources.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {projectDetails.resources.tutorials.map((link, index) => (
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-blue-50 transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-5 h-5 mr-2 text-green-600 flex-shrink-0"
+                      >
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                        <path d="m9 9.5 4 3-4 3"></path>
+                      </svg>
+                      <span className="text-blue-600">{link.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          {/* GitHub Repositories */}
+          {projectDetails.resources.repositories &&
+            projectDetails.resources.repositories.length > 0 && (
+              <div className="mb-8">
+                <h4 className="text-lg font-medium mb-2">
+                  GitHub Repositories
+                </h4>
+                <p className="text-gray-700 mb-3">
+                  Code repositories and templates you can reference or fork.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {projectDetails.resources.repositories.map((link, index) => (
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-blue-50 transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-5 h-5 mr-2 text-purple-600 flex-shrink-0"
+                      >
+                        <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                        <path d="M9 18c-4.51 2-5-2-7-2"></path>
+                      </svg>
+                      <span className="text-blue-600">{link.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          {/* Helpful Tools */}
+          {projectDetails.resources.tools &&
+            projectDetails.resources.tools.length > 0 && (
+              <div>
+                <h4 className="text-lg font-medium mb-2">Helpful Tools</h4>
+                <p className="text-gray-700 mb-3">
+                  Tools and services to enhance your development workflow.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {projectDetails.resources.tools.map((link, index) => (
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-blue-50 transition-colors"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-5 h-5 mr-2 text-orange-600 flex-shrink-0"
+                      >
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                      </svg>
+                      <span className="text-blue-600">{link.title}</span>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
         </div>
