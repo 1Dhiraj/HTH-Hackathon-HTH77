@@ -1,7 +1,9 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './Home';
-import CodeGenerator from './CodeGenerator';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./Home";
+import CodeGenerator from "./CodeGenerator";
+import WebDevChallenge from "./WebDevChallenge";
+import ProjectDocumentation from "./ProjectDocumentation";
 
 const App = () => {
   return (
@@ -10,6 +12,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/generate" element={<CodeGenerator />} />
+          <Route path="/challenge" element={<WebDevChallenge />} />
+          <Route path="/documentation" element={<ProjectDocumentation />} />
         </Routes>
       </div>
     </Router>

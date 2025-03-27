@@ -1,17 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, Plus, FileText, User, LogOut, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Search,
+  Plus,
+  FileText,
+  User,
+  LogOut,
+  Trash2,
+  BookOpen,
+  Award,
+} from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projectName, setProjectName] = useState('');
-  const [prompt, setPrompt] = useState('');
+  const [projectName, setProjectName] = useState("");
+  const [prompt, setPrompt] = useState("");
   const [projects, setProjects] = useState([]);
 
   // Load projects from localStorage on mount
   useEffect(() => {
-    const savedProjects = localStorage.getItem('projects');
+    const savedProjects = localStorage.getItem("projects");
     if (savedProjects) {
       setProjects(JSON.parse(savedProjects));
     }
@@ -19,41 +28,47 @@ const Home = () => {
 
   const handleCreateProject = () => {
     if (!projectName.trim()) {
-      alert('Please provide a project name');
+      alert("Please provide a project name");
       return;
     }
     if (!prompt.trim()) {
-      alert('Please provide a description for the project');
+      alert("Please provide a description for the project");
       return;
     }
 
     // Navigate to CodeGenerator with the new project details
-    navigate('/generate', { state: { initialPrompt: prompt, projectName } });
+    navigate("/generate", { state: { initialPrompt: prompt, projectName } });
     setIsModalOpen(false);
-    setProjectName('');
-    setPrompt('');
+    setProjectName("");
+    setPrompt("");
   };
 
   const openExistingProject = (project) => {
     // Navigate to CodeGenerator with existing project details, including designHtml
-    navigate('/generate', {
+    navigate("/generate", {
       state: {
         projectName: project.name,
         initialPrompt: project.prompt,
         code: project.code, // Pass the saved code
-        designHtml: project.designHtml // Pass the saved design HTML if available
-      }
+        designHtml: project.designHtml, // Pass the saved design HTML if available
+      },
     });
   };
 
   const handleDeleteProject = (projectId) => {
-    if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this project? This action cannot be undone."
+      )
+    ) {
       // Filter out the project to delete
-      const updatedProjects = projects.filter(project => project.id !== projectId);
+      const updatedProjects = projects.filter(
+        (project) => project.id !== projectId
+      );
       setProjects(updatedProjects);
       // Update localStorage
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      alert('Project deleted successfully!');
+      localStorage.setItem("projects", JSON.stringify(updatedProjects));
+      alert("Project deleted successfully!");
     }
   };
 
@@ -79,6 +94,20 @@ const Home = () => {
             <Plus className="w-5 h-5 mr-2" />
             Create New Project
           </button>
+          <Link
+            to="/challenge"
+            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+          >
+            <Award className="w-5 h-5 mr-2" />
+            Web Dev Challenge
+          </Link>
+          <Link
+            to="/documentation"
+            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+          >
+            <BookOpen className="w-5 h-5 mr-2" />
+            Documentation
+          </Link>
         </nav>
         <div className="p-4 border-t border-gray-200">
           <button className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md w-full">
@@ -116,32 +145,99 @@ const Home = () => {
         {/* Main Area */}
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
-            {/* Create New Project Button */}
-            <div className="mb-8">
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Create New Project
-              </button>
+            {/* Feature Boxes */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {/* Create Project Box */}
+              <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="flex justify-center mb-4">
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <Plus className="w-8 h-8 text-blue-600" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-center mb-2">
+                  Create New Project
+                </h3>
+                <p className="text-gray-600 text-center mb-4">
+                  Start a new web development project with AI assistance
+                </p>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Get Started
+                </button>
+              </div>
+
+              {/* Challenge Box */}
+              <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="flex justify-center mb-4">
+                  <div className="bg-yellow-100 p-3 rounded-full">
+                    <Award className="w-8 h-8 text-yellow-600" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-center mb-2">
+                  Web Dev Challenge
+                </h3>
+                <p className="text-gray-600 text-center mb-4">
+                  Test your web development knowledge with interactive
+                  challenges
+                </p>
+                <Link
+                  to="/challenge"
+                  className="block w-full py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors text-center"
+                >
+                  Take Challenge
+                </Link>
+              </div>
+
+              {/* Documentation Box */}
+              <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="flex justify-center mb-4">
+                  <div className="bg-purple-100 p-3 rounded-full">
+                    <BookOpen className="w-8 h-8 text-purple-600" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-center mb-2">
+                  Project Documentation
+                </h3>
+                <p className="text-gray-600 text-center mb-4">
+                  Generate detailed documentation for your web projects
+                </p>
+                <Link
+                  to="/documentation"
+                  className="block w-full py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-center"
+                >
+                  Create Documentation
+                </Link>
+              </div>
             </div>
 
             {/* Existing Projects Section */}
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Existing Projects</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Existing Projects
+            </h2>
             {projects.length === 0 ? (
-              <p className="text-gray-500">No projects yet. Create one to get started!</p>
+              <p className="text-gray-500">
+                No projects yet. Create one to get started!
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
-                  <div key={project.id} className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div
+                    key={project.id}
+                    className="relative bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
                     <button
                       onClick={() => openExistingProject(project)}
                       className="w-full text-left"
                     >
                       <div className="h-32 bg-gray-100 rounded-md mb-4"></div>
-                      <h3 className="text-lg font-medium text-gray-800">{project.name}</h3>
-                      <p className="text-sm text-gray-500">Last edited: {project.lastEdited}</p>
+                      <h3 className="text-lg font-medium text-gray-800">
+                        {project.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Last edited: {project.lastEdited}
+                      </p>
                     </button>
                     <button
                       onClick={() => handleDeleteProject(project.id)}
@@ -162,11 +258,16 @@ const Home = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Create New Project</h2>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              Create New Project
+            </h2>
 
             {/* Project Name Input */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="project-name">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-2"
+                htmlFor="project-name"
+              >
                 Project Name
               </label>
               <input
@@ -181,7 +282,10 @@ const Home = () => {
 
             {/* Prompt Textarea */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="prompt">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-2"
+                htmlFor="prompt"
+              >
                 Project Description
               </label>
               <textarea

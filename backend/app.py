@@ -108,7 +108,7 @@ async def run_groq(prompt: str, temperature: float = 0.7):
                     "content": prompt
                 }
             ],
-            model="llama3-70b-8192",
+            model="deepseek-r1-distill-llama-70b",
             temperature=temperature,
             max_tokens=4096
         )
