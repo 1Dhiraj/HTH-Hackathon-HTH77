@@ -27,9 +27,9 @@ const CodeGenerator = () => {
       setProjectName(savedProject.projectName || 'Untitled Project');
       setPrompt(savedProject.initialPrompt || '');
       if (savedProject.code) {
-        setGeneratedCode(savedProject.code); // Load saved code
+        setGeneratedCode(savedProject.code);
       } else if (savedProject.initialPrompt) {
-        handleInitialGeneration(savedProject.initialPrompt); // Generate if no code exists
+        handleInitialGeneration(savedProject.initialPrompt);
       }
     }
   }, [location.state]);
@@ -109,21 +109,210 @@ const CodeGenerator = () => {
     setIsLoading(true);
     setError('');
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64String = event.target.result;
-      setUploadedImages(prev => ({
-        ...prev,
-        [file.name]: base64String
-      }));
-      setPrompt(`Add an image with src="${file.name}"`);
-      handleInitialGeneration(`Add an image with src="${file.name}"`);
-    };
-    reader.onerror = () => {
-      setError('Failed to read the image file');
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('http://localhost:8000/analyze-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const { description, code } = data;
+
+      // Check if the response contains a login form; if not, override with a default login form
+      if (!code.html.includes('<form') || !code.html.includes('input') || !code.html.includes('button')) {
+        console.warn('Backend did not generate a login form. Using fallback.');
+        setGeneratedCode({
+          html: `<div class="login-container">
+    <form id="login-form">
+        <h2>Login</h2>
+        <div class="form-group">
+            <label for="username">Username or Email</label>
+            <input type="text" id="username" name="username" required aria-label="Username or Email">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required aria-label="Password">
+        </div>
+        <button type="submit">Login</button>
+    </form>
+</div>`,
+          css: `body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+.login-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}`,
+          javascript: `document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    if (!username || !password) {
+        alert('Please fill in both fields');
+        return;
+    }
+    alert('Login successful!');
+});`,
+          combined: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+    }
+    .login-container {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 16px;
+    }
+    input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <form id="login-form">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" name="username" required aria-label="Username or Email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required aria-label="Password">
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        if (!username || !password) {
+            alert('Please fill in both fields');
+            return;
+        }
+        alert('Login successful!');
+    });
+    </script>
+</body>
+</html>`
+        });
+      } else {
+        setGeneratedCode(code);
+      }
+
+      // Store the image as base64 for preview (optional)
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64String = event.target.result;
+        setUploadedImages(prev => ({
+          ...prev,
+          [file.name]: base64String
+        }));
+        setPrompt(`Generate a login form based on the uploaded image: ${file.name}`);
+      };
+      reader.onerror = () => {
+        setError('Failed to read the image file');
+        setIsLoading(false);
+      };
+      reader.readAsDataURL(file);
+
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      setError(`Failed to analyze image: ${error.message}`);
+    } finally {
       setIsLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleModification = async () => {
@@ -183,7 +372,7 @@ const CodeGenerator = () => {
       ...previewContent,
       html: updatedHtml,
       combined: `<!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -204,18 +393,15 @@ const CodeGenerator = () => {
     }
 
     const newProject = {
-      id: Date.now(), // Simple unique ID using timestamp
+      id: Date.now(),
       name: projectName,
       prompt: prompt,
       code: generatedCode,
       lastEdited: new Date().toLocaleDateString()
     };
 
-    // Load existing projects from localStorage
     const savedProjects = localStorage.getItem('projects');
     const projects = savedProjects ? JSON.parse(savedProjects) : [];
-
-    // Check if project with the same name exists, update it if so
     const existingProjectIndex = projects.findIndex(p => p.name === projectName);
     if (existingProjectIndex !== -1) {
       projects[existingProjectIndex] = newProject;
@@ -223,7 +409,6 @@ const CodeGenerator = () => {
       projects.push(newProject);
     }
 
-    // Save back to localStorage
     localStorage.setItem('projects', JSON.stringify(projects));
     alert('Project saved successfully!');
   };
@@ -250,7 +435,7 @@ const CodeGenerator = () => {
 
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold mb-2">Upload Design Image</h3>
+              <h3 className="text-lg font-semibold mb-2">Upload Login Form Image</h3>
               <input
                 type="file"
                 accept="image/*"
@@ -264,7 +449,7 @@ const CodeGenerator = () => {
                 disabled={isLoading}
               />
               <p className="mt-2 text-sm text-gray-500">
-                Upload screenshot/mockup (PNG, JPG)
+                Upload a login form screenshot/mockup (PNG, JPG)
               </p>
             </div>
 
@@ -272,7 +457,7 @@ const CodeGenerator = () => {
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe what you want to build..."
+                placeholder="Describe what you want to build (e.g., 'A login form with username and password fields')..."
                 className="w-full h-32 p-4 border rounded-lg resize-none"
               />
               <button
@@ -290,7 +475,7 @@ const CodeGenerator = () => {
                 <textarea
                   value={modificationPrompt}
                   onChange={(e) => setModificationPrompt(e.target.value)}
-                  placeholder="Describe your modifications (e.g., 'Change the button color to blue')"
+                  placeholder="Describe your modifications (e.g., 'Change the button color to green')..."
                   className="w-full h-24 p-4 border rounded-lg resize-none"
                 />
                 <button
@@ -334,7 +519,7 @@ const CodeGenerator = () => {
                   [currentTab]: newValue,
                   combined: currentTab === 'combined' ? newValue : `
                   <!DOCTYPE html>
-                  <html>
+                  <html lang="en">
                   <head>
                       <meta charset="UTF-8">
                       <meta name="viewport" content="width=device-width, initial-scale=1.0">
