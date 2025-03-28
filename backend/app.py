@@ -25,7 +25,7 @@ groq_client = groq.Groq(api_key=GROQ_API_KEY)
 
 # Configure Google Generative AI for image analysis
 genai.configure(api_key=API_KEY)
-vision_model = genai.GenerativeModel('gemini-1.5-flash')
+vision_model = genai.GenerativeModel('gemini-2.0-flash')
 
 app = FastAPI()
 
@@ -641,6 +641,76 @@ Response Format:
             "response": None
         }
 
+
+
+@app.post("/code-review")
+async def code_review(code_data: dict):
+    try:
+        code = code_data.get('code', '').strip()
+        language = code_data.get('language', 'javascript')
+        
+        if not code:
+            raise HTTPException(status_code=400, detail="No code provided")
+        
+        # Construct a detailed code review prompt
+        review_prompt = f"""Act as an expert code reviewer for {language} code. 
+Perform a deep, comprehensive code analysis with precise, actionable feedback:
+
+Code to Review:
+{code}
+
+COMPREHENSIVE REVIEW GUIDELINES:
+1. Code Quality Assessment
+   - Evaluate overall code structure
+   - Check adherence to best practices
+   - Assess readability and maintainability
+
+2. Performance Analysis
+   - Identify potential performance bottlenecks
+   - Suggest optimization strategies
+   - Recommend efficient alternatives
+
+3. Security Evaluation
+   - Detect potential security vulnerabilities
+   - Highlight risks and provide mitigation strategies
+   - Suggest defensive programming techniques
+
+4. Best Practices and Improvements
+   - Recommend code refactoring techniques
+   - Suggest modern coding patterns
+   - Provide specific, implementable suggestions
+
+5. Specific Focus Areas:
+   - Variable naming conventions
+   - Error handling
+   - Code modularity
+   - Potential memory leaks
+   - Unnecessary computations
+
+Output Format:
+- Provide a structured, detailed review
+- Use a professional, constructive tone
+- Prioritize actionable insights
+- Include code snippets for improvement where applicable
+"""
+        
+        # Use Groq to generate the code review
+        stdout, stderr, returncode = await run_groq(review_prompt, temperature=0.3)
+        
+        # Clean and parse the output
+        cleaned_output = clean_text(stdout)
+        
+        return {
+            "status": "success",
+            "language": language,
+            "review": cleaned_output
+        }
+        
+    except Exception as e:
+        logging.error(f"Code Review Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

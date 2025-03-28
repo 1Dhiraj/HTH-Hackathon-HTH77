@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React, { useState } from "react";
 
 const ContextMenu = ({ x, y, onClose, onPropertyChange }) => {
   const [selectedProperty, setSelectedProperty] = useState(null);
@@ -28,7 +28,7 @@ const ContextMenu = ({ x, y, onClose, onPropertyChange }) => {
 
   return (
     <div 
-      className="absolute bg-white shadow-lg rounded-lg p-2 z-50"
+      className="absolute bg-[#1A2A44] shadow-lg rounded-lg p-2 z-50 border border-[#4A6FA5]"
       style={{ left: x, top: y }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -37,7 +37,7 @@ const ContextMenu = ({ x, y, onClose, onPropertyChange }) => {
           {properties.map(prop => (
             <li 
               key={prop}
-              className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
+              className="px-2 py-1 text-white hover:bg-[#4A6FA5] cursor-pointer transition-colors"
               onClick={() => setSelectedProperty(prop)}
             >
               {prop.replace(/([A-Z])/g, ' $1').trim()}
@@ -47,22 +47,24 @@ const ContextMenu = ({ x, y, onClose, onPropertyChange }) => {
       ) : selectedProperty === 'padding' ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span>Padding</span>
+            <span className="text-[#D4AF37]">Padding</span>
             <button 
               onClick={() => setSelectedProperty(null)}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-[#F5F6F5] hover:text-[#D4AF37] transition-colors"
             >
               Back
             </button>
           </div>
           {['top', 'right', 'bottom', 'left'].map((side) => (
             <div key={side} className="flex items-center gap-2">
-              <label className="text-sm">{side.charAt(0).toUpperCase() + side.slice(1)}</label>
+              <label className="text-sm text-white">
+                {side.charAt(0).toUpperCase() + side.slice(1)}
+              </label>
               <input
                 type="number"
                 value={padding[side]}
                 onChange={(e) => handlePaddingChange(side, e.target.value)}
-                className="w-16 p-1 border rounded"
+                className="w-16 p-1 bg-[#2E4A77] text-white border border-[#4A6FA5] rounded focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                 min="0"
               />
             </div>
@@ -71,10 +73,10 @@ const ContextMenu = ({ x, y, onClose, onPropertyChange }) => {
       ) : ['backgroundColor', 'color', 'borderColor'].includes(selectedProperty) ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span>{selectedProperty.replace(/([A-Z])/g, ' $1').trim()}</span>
+            <span className="text-[#D4AF37]">{selectedProperty.replace(/([A-Z])/g, ' $1').trim()}</span>
             <button 
               onClick={() => setSelectedProperty(null)}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-[#F5F6F5] hover:text-[#D4AF37] transition-colors"
             >
               Back
             </button>
@@ -83,23 +85,23 @@ const ContextMenu = ({ x, y, onClose, onPropertyChange }) => {
             type="color"
             onChange={(e) => handleValueChange(selectedProperty, e.target.value)}
             value="#000000"
-            className="w-full h-10"
+            className="w-full h-10 bg-[#2E4A77] border border-[#4A6FA5] rounded"
           />
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span>{selectedProperty.replace(/([A-Z])/g, ' $1').trim()}</span>
+            <span className="text-[#D4AF37]">{selectedProperty.replace(/([A-Z])/g, ' $1').trim()}</span>
             <button 
               onClick={() => setSelectedProperty(null)}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-[#F5F6F5] hover:text-[#D4AF37] transition-colors"
             >
               Back
             </button>
           </div>
           <input
             type="number"
-            className="w-full p-1 border rounded"
+            className="w-full p-1 bg-[#2E4A77] text-white border border-[#4A6FA5] rounded focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
             onChange={(e) => handleValueChange(selectedProperty, e.target.value)}
             placeholder={selectedProperty === 'opacity' ? "0-1" : "Value in px"}
             step={selectedProperty === 'opacity' ? 0.1 : 1}
@@ -111,4 +113,5 @@ const ContextMenu = ({ x, y, onClose, onPropertyChange }) => {
     </div>
   );
 };
-export default ContextMenu
+
+export default ContextMenu;

@@ -11,6 +11,7 @@ import {
   Award,
   MessageCircle,
   Send,
+  Code, // Already imported
 } from "lucide-react";
 
 const Home = () => {
@@ -20,11 +21,18 @@ const Home = () => {
   const [projectName, setProjectName] = useState("");
   const [prompt, setPrompt] = useState("");
   const [projects, setProjects] = useState([]);
-  
+
   // AI Tutor State
   const [tutorQuestion, setTutorQuestion] = useState("");
   const [tutorMessages, setTutorMessages] = useState([]);
   const [isTutorLoading, setIsTutorLoading] = useState(false);
+
+  // Code Review State
+  const [isCodeReviewModalOpen, setIsCodeReviewModalOpen] = useState(false);
+  const [codeToReview, setCodeToReview] = useState("");
+  const [codeLanguage, setCodeLanguage] = useState("javascript");
+  const [codeReviewResult, setCodeReviewResult] = useState(null);
+  const [isCodeReviewLoading, setIsCodeReviewLoading] = useState(false);
 
   // Load projects from localStorage on mount
   useEffect(() => {
@@ -43,8 +51,6 @@ const Home = () => {
       alert("Please provide a description for the project");
       return;
     }
-
-    // Navigate to CodeGenerator with the new project details
     navigate("/generate", { state: { initialPrompt: prompt, projectName } });
     setIsModalOpen(false);
     setProjectName("");
@@ -52,7 +58,6 @@ const Home = () => {
   };
 
   const openExistingProject = (project) => {
-    // Navigate to CodeGenerator with existing project details, including designHtml
     navigate("/generate", {
       state: {
         projectName: project.name,
@@ -69,12 +74,10 @@ const Home = () => {
         "Are you sure you want to delete this project? This action cannot be undone."
       )
     ) {
-      // Filter out the project to delete
       const updatedProjects = projects.filter(
         (project) => project.id !== projectId
       );
       setProjects(updatedProjects);
-      // Update localStorage
       localStorage.setItem("projects", JSON.stringify(updatedProjects));
       alert("Project deleted successfully!");
     }
@@ -82,59 +85,69 @@ const Home = () => {
 
   const handleTutorQuestion = async () => {
     if (!tutorQuestion.trim()) return;
-  
-    const newMessages = [
-      ...tutorMessages, 
-      { role: 'user', content: tutorQuestion }
-    ];
+    const newMessages = [...tutorMessages, { role: "user", content: tutorQuestion }];
     setTutorMessages(newMessages);
     setTutorQuestion("");
     setIsTutorLoading(true);
-  
+
     try {
-      const response = await fetch('http://localhost:8000/ai-tutor', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
+      const response = await fetch("http://localhost:8000/ai-tutor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           prompt: tutorQuestion,
-          context: 'web development learning' 
+          context: "web development learning",
         }),
       });
-  
-      if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-  
+      if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
       const data = await response.json();
-      
-      if (data.status === 'success') {
-        setTutorMessages(prev => [
-          ...prev, 
-          { role: 'ai', content: data.response }
-        ]);
+      if (data.status === "success") {
+        setTutorMessages((prev) => [...prev, { role: "ai", content: data.response }]);
       } else {
-        console.error('AI Tutor Error:', data.message);
-        setTutorMessages(prev => [
-          ...prev, 
-          { 
-            role: 'ai', 
-            content: `Error: ${data.message || 'Sorry, I encountered an error. Please try again.'}` 
-          }
+        setTutorMessages((prev) => [
+          ...prev,
+          { role: "ai", content: `Error: ${data.message || "Sorry, I encountered an error."}` },
         ]);
       }
     } catch (error) {
-      console.error('Tutor Request Error:', error);
-      setTutorMessages(prev => [
-        ...prev, 
-        { 
-          role: 'ai', 
-          content: `Error: ${error.message || 'Network or server error. Please check your connection and try again.'}` 
-        }
+      setTutorMessages((prev) => [
+        ...prev,
+        { role: "ai", content: `Error: ${error.message || "Network or server error."}` },
       ]);
     } finally {
       setIsTutorLoading(false);
+    }
+  };
+
+  const handleCodeReview = async () => {
+    if (!codeToReview.trim()) {
+      alert("Please enter code to review");
+      return;
+    }
+
+    setIsCodeReviewLoading(true);
+    setCodeReviewResult(null);
+
+    try {
+      const response = await fetch("http://localhost:8000/code-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: codeToReview,
+          language: codeLanguage,
+        }),
+      });
+      if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+      const data = await response.json();
+      if (data.status === "success") {
+        setCodeReviewResult(data.review);
+      } else {
+        alert("Failed to get code review");
+      }
+    } catch (error) {
+      alert("Network or server error. Please try again.");
+    } finally {
+      setIsCodeReviewLoading(false);
     }
   };
 
@@ -170,6 +183,13 @@ const Home = () => {
             <MessageCircle className="w-5 h-5 mr-3 text-green-500 group-hover:scale-110 transition-transform" />
             AI Tutor
           </button>
+          <button
+            onClick={() => setIsCodeReviewModalOpen(true)}
+            className="w-full flex items-center px-4 py-3 text-white hover:bg-[#E94560]/20 rounded-lg text-left transition-all group"
+          >
+            <Code className="w-5 h-5 mr-3 text-blue-500 group-hover:scale-110 transition-transform" />
+            Code Review
+          </button>
           <Link
             to="/challenge"
             className="flex items-center px-4 py-3 text-white hover:bg-[#E94560]/20 rounded-lg group"
@@ -197,80 +217,8 @@ const Home = () => {
         </div>
       </aside>
 
-      {/* Rest of the existing Home component code remains the same... */}
-
-      {/* AI Tutor Modal */}
-      {isTutorModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#16213E] rounded-2xl p-8 w-full max-w-2xl h-[80vh] flex flex-col border-4 border-[#E94560] shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-white">
-                Web Development AI Tutor
-              </h2>
-              <button 
-                onClick={() => setIsTutorModalOpen(false)}
-                className="text-white hover:text-[#E94560] transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Chat Messages Area */}
-            <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-4 bg-[#0F3460] rounded-lg">
-              {tutorMessages.map((message, index) => (
-                <div 
-                  key={index} 
-                  className={`flex ${
-                    message.role === 'user' 
-                      ? 'justify-end' 
-                      : 'justify-start'
-                  }`}
-                >
-                  <div 
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      message.role === 'user' 
-                        ? 'bg-[#E94560] text-white' 
-                        : 'bg-[#16213E] border border-[#E94560]/30'
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                </div>
-              ))}
-              {isTutorLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-[#16213E] border border-[#E94560]/30 p-3 rounded-lg">
-                    Thinking...
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Question Input Area */}
-            <div className="flex space-x-2">
-              <input 
-                type="text"
-                value={tutorQuestion}
-                onChange={(e) => setTutorQuestion(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleTutorQuestion()}
-                placeholder="Ask a web development question..."
-                className="flex-1 px-4 py-3 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560]"
-              />
-              <button 
-                onClick={handleTutorQuestion}
-                disabled={isTutorLoading}
-                className="bg-[#E94560] text-white p-3 rounded-lg hover:bg-[#FF6B9E] transition-colors disabled:opacity-50"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
         <header className="bg-[#0F3460] p-4 flex items-center justify-between">
           <div className="relative flex-1 max-w-md">
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-[#E94560]" />
@@ -285,12 +233,9 @@ const Home = () => {
           </button>
         </header>
 
-        {/* Main Area */}
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
-            {/* Feature Boxes */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {/* Create Project Box */}
               <div className="bg-[#16213E] rounded-2xl p-6 transform hover:scale-105 hover:shadow-2xl transition-all group">
                 <div className="flex justify-center mb-4">
                   <div className="bg-[#E94560]/20 p-3 rounded-full group-hover:rotate-180 transition-transform">
@@ -310,8 +255,6 @@ const Home = () => {
                   Get Started
                 </button>
               </div>
-
-              {/* Challenge Box */}
               <div className="bg-[#16213E] rounded-2xl p-6 transform hover:scale-105 hover:shadow-2xl transition-all group">
                 <div className="flex justify-center mb-4">
                   <div className="bg-yellow-500/20 p-3 rounded-full group-hover:rotate-180 transition-transform">
@@ -331,8 +274,6 @@ const Home = () => {
                   Take Challenge
                 </Link>
               </div>
-
-              {/* Documentation Box */}
               <div className="bg-[#16213E] rounded-2xl p-6 transform hover:scale-105 hover:shadow-2xl transition-all group">
                 <div className="flex justify-center mb-4">
                   <div className="bg-purple-500/20 p-3 rounded-full group-hover:rotate-180 transition-transform">
@@ -354,14 +295,9 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Existing Projects Section */}
-            <h2 className="text-2xl font-bold mb-6 text-white">
-              Existing Projects
-            </h2>
+            <h2 className="text-2xl font-bold mb-6 text-white">Existing Projects</h2>
             {projects.length === 0 ? (
-              <p className="text-gray-400">
-                No projects yet. Create one to get started!
-              </p>
+              <p className="text-gray-400">No projects yet. Create one to get started!</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
@@ -369,17 +305,10 @@ const Home = () => {
                     key={project.id}
                     className="bg-[#16213E] rounded-2xl p-4 relative group hover:scale-105 transition-all hover:shadow-2xl"
                   >
-                    <button
-                      onClick={() => openExistingProject(project)}
-                      className="w-full text-left"
-                    >
+                    <button onClick={() => openExistingProject(project)} className="w-full text-left">
                       <div className="h-32 bg-gradient-to-br from-[#0F3460] to-[#E94560]/30 rounded-xl mb-4 opacity-80 group-hover:opacity-100 transition-all"></div>
-                      <h3 className="text-lg font-medium text-white">
-                        {project.name}
-                      </h3>
-                      <p className="text-sm text-gray-400">
-                        Last edited: {project.lastEdited}
-                      </p>
+                      <h3 className="text-lg font-medium text-white">{project.name}</h3>
+                      <p className="text-sm text-gray-400">Last edited: {project.lastEdited}</p>
                     </button>
                     <button
                       onClick={() => handleDeleteProject(project.id)}
@@ -400,16 +329,9 @@ const Home = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-[#16213E] rounded-2xl p-8 w-full max-w-md border-4 border-[#E94560] shadow-2xl">
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Create New Project
-            </h2>
-
-            {/* Project Name Input */}
+            <h2 className="text-2xl font-bold text-white mb-6 text-center">Create New Project</h2>
             <div className="mb-4">
-              <label
-                className="block text-sm font-medium text-gray-300 mb-2"
-                htmlFor="project-name"
-              >
+              <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="project-name">
                 Project Name
               </label>
               <input
@@ -421,13 +343,8 @@ const Home = () => {
                 className="w-full px-4 py-3 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560]"
               />
             </div>
-
-            {/* Prompt Textarea */}
             <div className="mb-6">
-              <label
-                className="block text-sm font-medium text-gray-300 mb-2"
-                htmlFor="prompt"
-              >
+              <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="prompt">
                 Project Description
               </label>
               <textarea
@@ -438,8 +355,6 @@ const Home = () => {
                 className="w-full h-32 px-4 py-3 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560] resize-none"
               />
             </div>
-
-            {/* Buttons */}
             <div className="flex space-x-4">
               <button
                 onClick={handleCreateProject}
@@ -454,6 +369,119 @@ const Home = () => {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Tutor Modal */}
+      {isTutorModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#16213E] rounded-2xl p-8 w-full max-w-2xl h-[80vh] flex flex-col border-4 border-[#E94560] shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-white">Web Development AI Tutor</h2>
+              <button
+                onClick={() => setIsTutorModalOpen(false)}
+                className="text-white hover:text-[#E94560] transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-4 bg-[#0F3460] rounded-lg">
+              {tutorMessages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.role === "user" ? "bg-[#E94560] text-white" : "bg-[#16213E] border border-[#E94560]/30"
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+              {isTutorLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-[#16213E] border border-[#E94560]/30 p-3 rounded-lg">Thinking...</div>
+                </div>
+              )}
+            </div>
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={tutorQuestion}
+                onChange={(e) => setTutorQuestion(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleTutorQuestion()}
+                placeholder="Ask a web development question..."
+                className="flex-1 px-4 py-3 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560]"
+              />
+              <button
+                onClick={handleTutorQuestion}
+                disabled={isTutorLoading}
+                className="bg-[#E94560] text-white p-3 rounded-lg hover:bg-[#FF6B9E] transition-colors disabled:opacity-50"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Code Review Modal */}
+      {isCodeReviewModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#16213E] rounded-2xl p-8 w-full max-w-2xl h-[80vh] flex flex-col border-4 border-[#E94560] shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-white">Code Review</h2>
+              <button
+                onClick={() => setIsCodeReviewModalOpen(false)}
+                className="text-white hover:text-[#E94560] transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Language Selection and Code Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Select Language</label>
+              <select
+                value={codeLanguage}
+                onChange={(e) => setCodeLanguage(e.target.value)}
+                className="w-full px-4 py-3 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560]"
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="css">CSS</option>
+                <option value="html">HTML</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Enter Your Code</label>
+              <textarea
+                value={codeToReview}
+                onChange={(e) => setCodeToReview(e.target.value)}
+                placeholder="Paste your code here..."
+                className="w-full h-32 px-4 py-3 bg-[#0F3460] border border-[#E94560]/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#E94560] resize-none"
+              />
+            </div>
+
+            {/* Review Button */}
+            <button
+              onClick={handleCodeReview}
+              disabled={isCodeReviewLoading}
+              className="w-full py-3 bg-[#E94560] text-white rounded-full hover:bg-[#FF6B9E] transition-colors disabled:opacity-50 mb-4"
+            >
+              {isCodeReviewLoading ? "Reviewing..." : "Get Code Review"}
+            </button>
+
+            {/* Review Result */}
+            {codeReviewResult && (
+              <div className="flex-1 overflow-y-auto p-4 bg-[#0F3460] rounded-lg">
+                <h3 className="text-lg font-semibold text-white mb-2">Review Results</h3>
+                <pre className="text-gray-200 whitespace-pre-wrap">{codeReviewResult}</pre>
+              </div>
+            )}
           </div>
         </div>
       )}
